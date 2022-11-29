@@ -1,6 +1,8 @@
 pub mod dynamic;
 
-mod year_2021;
+mod solution {
+    mod year_2021;
+}
 
 use std::{fmt, fs, io, num::ParseIntError, path::Path, str::FromStr, string::FromUtf8Error};
 
