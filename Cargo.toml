@@ -1,0 +1,9 @@
+[package]
+name = "aoc"
+version = "0.1.0"
+edition = "2021"
+
+[dependencies]
+curl = "0.4"
+thiserror = "1"
+once_cell = "1"
