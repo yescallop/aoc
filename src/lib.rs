@@ -1,36 +1,15 @@
 pub mod dynamic;
 
-mod solution {
-    mod year_2021;
-}
-
-use std::{fmt, fs, io, num::ParseIntError, path::Path, str::FromStr, string::FromUtf8Error};
-
-use curl::easy::Easy;
-
-#[derive(Debug, thiserror::Error)]
-pub enum Error {
-    #[error("io: {0}")]
-    Io(#[from] io::Error),
-    #[error("curl: {0}")]
-    Curl(#[from] curl::Error),
-    #[error("solution not found")]
-    SolutionNotFound,
-}
-
-macro_rules! impl_error_from {
-    ($($ty:ty),+) => {
-        $(impl From<$ty> for Error {
-            fn from(e: $ty) -> Error {
-                Error::Io(io::Error::new(io::ErrorKind::InvalidData, e))
-            }
-        })+
-    };
-}
-
-impl_error_from!(FromUtf8Error, ParseIntError);
+mod error;
+pub use error::Error;
 
 pub type Result<T, E = Error> = std::result::Result<T, E>;
+
+mod solution;
+
+use std::{fmt, fs, path::Path, str::FromStr};
+
+use curl::easy::Easy;
 
 pub trait Solution<const YEAR: u32, const DAY: u32> {
     fn solve(&mut self) -> Result<()>;
