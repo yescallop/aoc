@@ -6,4 +6,12 @@ macro_rules! err {
     };
 }
 
+macro_rules! ensure {
+    ($cond:expr) => {
+        if (!$cond) {
+            err!();
+        }
+    };
+}
+
 mod year_2021;
