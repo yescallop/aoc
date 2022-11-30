@@ -18,7 +18,7 @@ impl Solution<2077, 1> for Puzzle {
 }
 ```
 
-Typically you won't need to modify anything else, thanks to [autoref specialization](https://github.com/dtolnay/case-studies/blob/master/autoref-specialization/README.md) implemented in the [`dynamic`](/src/dynamic.rs) module, except that the `push_sols` macro call therein needs to be updated before a new year's work.
+Typically you won't need to modify anything else, thanks to *specialization* implemented in the [`dynamic`](/src/dynamic.rs) module, except that the `push_sols` macro call therein needs to be updated before a new year's work.
 
 [^1]: To run a specific solution, run the binary with arguments `year day`.
 You may omit the day to run the latest solution in a specific year.

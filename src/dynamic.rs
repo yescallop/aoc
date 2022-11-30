@@ -12,17 +12,17 @@ pub struct DynSolution {
 
 struct Helper<const Y: u32, const D: u32>;
 
-trait Blanket: Sized {
-    fn push_sol(self, _: &mut Vec<DynSolution>) {}
+trait Blanket {
+    fn push_sol(&self, _: &mut Vec<DynSolution>) {}
 }
 
-impl<T> Blanket for &T {}
+impl<T> Blanket for T {}
 
 impl<const Y: u32, const D: u32> Helper<Y, D>
 where
     Puzzle: Solution<Y, D>,
 {
-    fn push_sol(self, vec: &mut Vec<DynSolution>) {
+    fn push_sol(&self, vec: &mut Vec<DynSolution>) {
         vec.push(DynSolution {
             year: Y,
             day: D,
