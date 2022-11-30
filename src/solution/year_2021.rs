@@ -13,7 +13,7 @@ impl Solution<2021, 2> for Puzzle {
     fn solve(&mut self) -> Result<()> {
         let (mut h_pos, mut depth) = (0, 0);
         for l in self.input_lines() {
-            let (dir, x) = ok!(l.split_once(' '));
+            let (dir, x) = l.split_once(' ').ok()?;
             let x = x.parse::<u32>()?;
             match dir {
                 "forward" => h_pos += x,
@@ -27,7 +27,7 @@ impl Solution<2021, 2> for Puzzle {
 
         let (mut h_pos, mut depth, mut aim) = (0, 0, 0);
         for l in self.input_lines() {
-            let (dir, x) = ok!(l.split_once(' '));
+            let (dir, x) = l.split_once(' ').ok()?;
             let x = x.parse::<u32>()?;
             match dir {
                 "down" => aim += x,
