@@ -2,9 +2,9 @@
 
 This repository holds my solutions to [Advent of Code](https://adventofcode.com/) puzzles, written in Rust, licensed under the [MIT License](/LICENSE).
 
-## Usage
+## Using this crate as a template
 
-Insert your solution in the codebase, `cargo run`, and you're done.
+Replace the [solutions](/src/solution/) with your own, `cargo run`, and you're done.
 
 The *latest* solution is run by default[^1], against the puzzle input fetched from the website[^2] or local cache.
 
@@ -22,7 +22,7 @@ impl Solution<2077, 1> for Puzzle {
 }
 ```
 
-Running this solution against a puzzle input of `100` bytes and `10` lines, the program would print the following:
+Running this solution against an input of `100` bytes and `10` lines, the program would print the following:
 
 ```text
 (year, day) = (2077, 1)
@@ -34,7 +34,7 @@ Typically you won't need to modify anything else, except for some small initiali
 
 [^1]: To run a specific solution, pass in the arguments `year day`.
 You may omit the day to run the latest solution in a specific year.
-[^2]: Cookie file (`cookie.txt`) is needed, with contents `session=xxx`.
+[^2]: Cookie file (`cookie.txt`) is needed, with contents `session=<obtained from your browser>`.
 [^3]: This includes updating the [module declarations][1] and the [`push_sols` macro call][2].
 
 [1]: https://github.com/yescallop/aoc/blob/f245504b312fea9e9dbd71268f0e585276c9998d/src/solution.rs#L17
