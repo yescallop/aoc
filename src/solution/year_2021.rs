@@ -54,7 +54,7 @@ impl Solution<2021, 3> for Puzzle {
         for line in self.input.lines() {
             ensure!(line.len() == bits);
 
-            // u32::from_str_radix allows leading zeros, so...
+            // `u32::from_str_radix` allows leading zeros, so...
             let num = line
                 .bytes()
                 .enumerate()

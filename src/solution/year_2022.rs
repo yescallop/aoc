@@ -1,18 +1,24 @@
 use super::*;
 
+// Alternative: collect into a `Vec` and use `sort_unstable_by`.
 impl Solution<2022, 1> for Puzzle {
     fn solve(&mut self) -> Result<()> {
-        let mut vec = self
-            .input
-            .line_blocks()
-            .map(|b| b.map(|l| l.parse::<u32>()).sum())
-            .collect::<Result<Vec<u32>, _>>()?;
+        let mut max = [0; 3];
+        for block in &self.input.line_blocks() {
+            let sum = block.map(u32::from_str).sum::<Result<_, _>>()?;
+            // This should be fairly good, I suppose.
+            for i in 0..3 {
+                // Numbers may equal.
+                if sum >= max[i] {
+                    max.copy_within(i..2, i + 1);
+                    max[i] = sum;
+                    break;
+                }
+            }
+        }
 
-        ensure!(vec.len() >= 3);
-        vec.sort_unstable_by(|a, b| b.cmp(a));
-
-        self.output(vec[0]);
-        self.output(vec[..3].iter().sum::<u32>());
+        self.output(max[0]);
+        self.output(max.iter().sum::<u32>());
         Ok(())
     }
 }
