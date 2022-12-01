@@ -34,6 +34,5 @@ fn run() -> Result<()> {
     let mut puzzle = fetch_puzzle(sol.year, sol.day)?;
     (sol.solve)(&mut puzzle)?;
 
-    println!("{puzzle}");
     Ok(())
 }

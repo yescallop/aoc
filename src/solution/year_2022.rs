@@ -2,7 +2,7 @@ use super::*;
 
 // Alternative: collect into a `Vec` and use `sort_unstable_by`.
 impl Solution<2022, 1> for Puzzle {
-    fn solve(&mut self) -> Result<()> {
+    fn solve(&self) -> Result<()> {
         let mut max = [0; 3];
         for block in &self.input.line_blocks() {
             let sum = block.map(u32::from_str).sum::<Result<_, _>>()?;

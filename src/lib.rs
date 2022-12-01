@@ -8,39 +8,31 @@ pub type Result<T, E = Error> = std::result::Result<T, E>;
 mod solution;
 mod str_ext;
 
-use std::{fmt, fs, path::Path};
+use std::{cell::Cell, fmt, fs, path::Path};
 
 use curl::easy::Easy;
 
 pub trait Solution<const YEAR: u32, const DAY: u32> {
-    fn solve(&mut self) -> Result<()>;
+    fn solve(&self) -> Result<()>;
 }
 
-#[readonly::make]
 pub struct Puzzle {
-    pub input: String,
-    output: Vec<String>,
+    input: String,
+    out_index: Cell<u32>,
 }
 
 impl Puzzle {
     fn new(input: String) -> Puzzle {
         Puzzle {
             input,
-            output: vec![],
+            out_index: Cell::new(0),
         }
     }
 
-    pub fn output<T: fmt::Display>(&mut self, t: T) {
-        self.output.push(t.to_string())
-    }
-}
-
-impl fmt::Display for Puzzle {
-    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
-        for (i, x) in self.output.iter().enumerate() {
-            writeln!(f, "out[{i}] = {x}")?;
-        }
-        Ok(())
+    fn output<T: fmt::Display>(&self, t: T) {
+        let index = self.out_index.get();
+        self.out_index.set(index + 1);
+        println!("out[{index}] = {t}");
     }
 }
 

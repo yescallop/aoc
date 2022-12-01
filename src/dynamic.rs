@@ -7,7 +7,7 @@ static SOLS: OnceCell<Vec<DynSolution>> = OnceCell::new();
 pub struct DynSolution {
     pub year: u32,
     pub day: u32,
-    pub solve: fn(&mut Puzzle) -> Result<()>,
+    pub solve: fn(&Puzzle) -> Result<()>,
 }
 
 struct Helper<const Y: u32, const D: u32>;
