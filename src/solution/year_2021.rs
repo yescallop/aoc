@@ -53,11 +53,18 @@ impl Solution<2021, 3> for Puzzle {
 
         for line in self.input_lines() {
             ensure!(line.len() == bits);
-            vec.push(u32::from_str_radix(line, 2)?);
 
-            for (i, x) in line.bytes().enumerate() {
-                sums[i] += if x == b'1' { 1 } else { -1 };
-            }
+            // u32::from_str_radix allows leading zeros, so...
+            let num = line
+                .bytes()
+                .enumerate()
+                .try_fold(0, |acc, (i, x)| {
+                    let x = (x as char).to_digit(2)?;
+                    sums[i] += if x == 1 { 1 } else { -1 };
+                    Some((acc << 1) | x)
+                })
+                .ok()?;
+            vec.push(num);
         }
 
         let gamma = sums.iter().fold(0, |acc, &x| (acc << 1) | (x >= 0) as u32);
