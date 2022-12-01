@@ -37,7 +37,7 @@ impl Puzzle {
     }
 
     pub fn input_vec<T: FromStr>(&self) -> Result<Vec<T>, T::Err> {
-        self.input.lines().map(|l| l.parse()).collect()
+        self.input.lines().map(T::from_str).collect()
     }
 
     pub fn output<T: fmt::Display>(&mut self, t: T) {

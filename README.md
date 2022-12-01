@@ -37,5 +37,5 @@ You may omit the day to run the latest solution in a specific year.
 [^2]: Cookie file (`cookie.txt`) is needed, with contents `session=<obtained from your browser>`.
 [^3]: This includes updating the [module declarations][1] and the [`push_sols` macro call][2].
 
-[1]: https://github.com/yescallop/aoc/blob/f245504b312fea9e9dbd71268f0e585276c9998d/src/solution.rs#L17
-[2]: https://github.com/yescallop/aoc/blob/f245504b312fea9e9dbd71268f0e585276c9998d/src/dynamic.rs#L52
+[1]: https://github.com/yescallop/aoc/blob/main/src/solution.rs#L17
+[2]: https://github.com/yescallop/aoc/blob/main/src/dynamic.rs#L52
