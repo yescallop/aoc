@@ -6,8 +6,9 @@ pub use error::Error;
 pub type Result<T, E = Error> = std::result::Result<T, E>;
 
 mod solution;
+mod str_ext;
 
-use std::{fmt, fs, path::Path, str::FromStr};
+use std::{fmt, fs, path::Path};
 
 use curl::easy::Easy;
 
@@ -15,8 +16,9 @@ pub trait Solution<const YEAR: u32, const DAY: u32> {
     fn solve(&mut self) -> Result<()>;
 }
 
+#[readonly::make]
 pub struct Puzzle {
-    input: String,
+    pub input: String,
     output: Vec<String>,
 }
 
@@ -26,18 +28,6 @@ impl Puzzle {
             input,
             output: vec![],
         }
-    }
-
-    pub fn input(&self) -> &str {
-        &self.input
-    }
-
-    pub fn input_lines(&self) -> impl Iterator<Item = &str> {
-        self.input.lines()
-    }
-
-    pub fn input_vec<T: FromStr>(&self) -> Result<Vec<T>, T::Err> {
-        self.input.lines().map(T::from_str).collect()
     }
 
     pub fn output<T: fmt::Display>(&mut self, t: T) {

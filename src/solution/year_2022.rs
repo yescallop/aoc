@@ -1,19 +1,12 @@
-use std::iter;
-
 use super::*;
 
 impl Solution<2022, 1> for Puzzle {
     fn solve(&mut self) -> Result<()> {
-        let mut sum = 0;
-        let mut vec = vec![];
-        for line in self.input_lines().chain(iter::once("")) {
-            if line.is_empty() {
-                vec.push(sum);
-                sum = 0;
-            } else {
-                sum += line.parse::<u32>()?;
-            }
-        }
+        let mut vec = self
+            .input
+            .line_blocks()
+            .map(|b| b.map(|l| l.parse::<u32>()).sum())
+            .collect::<Result<Vec<u32>, _>>()?;
 
         ensure!(vec.len() >= 3);
         vec.sort_unstable_by(|a, b| b.cmp(a));

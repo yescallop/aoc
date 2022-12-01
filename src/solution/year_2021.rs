@@ -2,7 +2,7 @@ use super::*;
 
 impl Solution<2021, 1> for Puzzle {
     fn solve(&mut self) -> Result<()> {
-        let vec = self.input_vec::<u32>()?;
+        let vec = self.input.parse_lines::<u32>()?;
         self.output(vec.windows(2).filter(|w| w[1] > w[0]).count());
         self.output(vec.windows(4).filter(|w| w[3] > w[0]).count());
         Ok(())
@@ -12,7 +12,7 @@ impl Solution<2021, 1> for Puzzle {
 impl Solution<2021, 2> for Puzzle {
     fn solve(&mut self) -> Result<()> {
         let (mut h_pos, mut depth) = (0, 0);
-        for line in self.input_lines() {
+        for line in self.input.lines() {
             let (dir, x) = line.split_once(' ').ok()?;
             let x = x.parse::<u32>()?;
             match dir {
@@ -26,7 +26,7 @@ impl Solution<2021, 2> for Puzzle {
         self.output(h_pos * depth);
 
         let (mut h_pos, mut depth, mut aim) = (0, 0, 0);
-        for line in self.input_lines() {
+        for line in self.input.lines() {
             let (dir, x) = line.split_once(' ').ok()?;
             let x = x.parse::<u32>()?;
             match dir {
@@ -47,11 +47,11 @@ impl Solution<2021, 2> for Puzzle {
 
 impl Solution<2021, 3> for Puzzle {
     fn solve(&mut self) -> Result<()> {
-        let bits = self.input_lines().next().ok()?.len();
+        let bits = self.input.lines().next().ok()?.len();
         let mut sums = vec![0; bits];
         let mut vec = vec![];
 
-        for line in self.input_lines() {
+        for line in self.input.lines() {
             ensure!(line.len() == bits);
 
             // u32::from_str_radix allows leading zeros, so...
