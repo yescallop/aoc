@@ -1,6 +1,6 @@
 use super::*;
 
-// Alternative: collect into a `Vec` and use `sort_unstable_by`.
+// Alternative: collect into a `Vec` and use `{sort, select_nth}_unstable_by`.
 impl Solution<2022, 1> for Puzzle {
     fn solve(&mut self) -> Result<()> {
         let mut max = [0; 3];

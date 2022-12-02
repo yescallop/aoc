@@ -54,7 +54,7 @@ impl Solution<2021, 3> for Puzzle {
         for line in self.input.lines() {
             ensure!(line.len() == bits);
 
-            // `u32::from_str_radix` allows leading zeros, so...
+            // `u32::from_str_radix` allows leading '+', so...
             let num = line
                 .bytes()
                 .enumerate()
@@ -72,7 +72,7 @@ impl Solution<2021, 3> for Puzzle {
 
         self.output(gamma * epsilon);
 
-        fn rating(mut data: &mut [u32], bits: usize, rate: u32, rev: bool) -> Option<u32> {
+        fn rating(mut data: Vec<u32>, bits: usize, rate: u32, rev: bool) -> Option<u32> {
             let mut mask = 1 << (bits - 1);
             let mut crit = rate & mask;
 
@@ -80,7 +80,7 @@ impl Solution<2021, 3> for Puzzle {
                 let next_mask = mask >> 1;
                 let mut sum = 0;
 
-                let cnt = data.iter_mut().partition_in_place(|x| {
+                data.retain(|x| {
                     if x & mask == crit {
                         sum += if x & next_mask != 0 { 1 } else { -1 };
                         true
@@ -88,19 +88,18 @@ impl Solution<2021, 3> for Puzzle {
                         false
                     }
                 });
-                if cnt == 1 {
+                if data.len() == 1 {
                     return Some(data[0]);
                 }
 
-                data = &mut data[..cnt];
                 mask = next_mask;
                 crit = ((sum >= 0) != rev) as u32 * mask;
             }
             None
         }
 
-        let oxygen_gen = rating(&mut data, bits, gamma, false).ok()?;
-        let co2_scrub = rating(&mut data, bits, epsilon, true).ok()?;
+        let oxygen_gen = rating(data.clone(), bits, gamma, false).ok()?;
+        let co2_scrub = rating(data, bits, epsilon, true).ok()?;
 
         self.output(oxygen_gen * co2_scrub);
         Ok(())
