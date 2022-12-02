@@ -8,31 +8,33 @@ pub type Result<T, E = Error> = std::result::Result<T, E>;
 mod solution;
 mod str_ext;
 
-use std::{cell::Cell, fmt, fs, path::Path};
+use std::{fmt::Display, fs, path::Path};
 
 use curl::easy::Easy;
 
 pub trait Solution<const YEAR: u32, const DAY: u32> {
-    fn solve(&self) -> Result<()>;
+    fn solve(&mut self) -> Result<()>;
 }
 
 pub struct Puzzle {
     input: String,
-    out_index: Cell<u32>,
+    outputs: Vec<String>,
 }
 
 impl Puzzle {
     fn new(input: String) -> Puzzle {
         Puzzle {
             input,
-            out_index: Cell::new(0),
+            outputs: Vec::with_capacity(2),
         }
     }
 
-    fn output<T: fmt::Display>(&self, t: T) {
-        let index = self.out_index.get();
-        self.out_index.set(index + 1);
-        println!("out[{index}] = {t}");
+    fn output<T: Display>(&mut self, t: T) {
+        self.outputs.push(t.to_string());
+    }
+
+    pub fn outputs(&self) -> impl Iterator<Item = &str> {
+        self.outputs.iter().map(|out| out.as_str())
     }
 }
 

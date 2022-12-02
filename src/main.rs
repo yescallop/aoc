@@ -34,5 +34,9 @@ fn run() -> Result<()> {
     let mut puzzle = fetch_puzzle(sol.year, sol.day)?;
     (sol.solve)(&mut puzzle)?;
 
+    for (i, out) in puzzle.outputs().enumerate() {
+        println!("out[{i}] = {out}");
+    }
+
     Ok(())
 }
