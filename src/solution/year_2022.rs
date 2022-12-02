@@ -25,3 +25,29 @@ impl Solution<2022, 1> for Puzzle {
         Ok(())
     }
 }
+
+impl Solution<2022, 2> for Puzzle {
+    fn solve(&mut self) -> Result<()> {
+        let mut total = (0, 0);
+        for line in self.input.lines() {
+            let &[a @ b'A'..=b'C', b' ', x @ b'X'..=b'Z'] = line.as_bytes() else {
+                err!();
+            };
+            let (opp, x) = (a - b'A', x - b'X');
+
+            let you = x;
+            let outcome = (4 + you - opp) % 3;
+            let score = (you + 1) + outcome * 3;
+            total.0 += score as u32;
+
+            let outcome = x;
+            let you = (2 + opp + outcome) % 3;
+            let score = (you + 1) + outcome * 3;
+            total.1 += score as u32;
+        }
+
+        self.output(total.0);
+        self.output(total.1);
+        Ok(())
+    }
+}

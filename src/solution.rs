@@ -1,6 +1,6 @@
 macro_rules! err {
     () => {
-        None.ok()?
+        return None.ok()
     };
 }
 
