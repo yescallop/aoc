@@ -4,6 +4,7 @@ use super::*;
 impl Solution<2022, 1> for Puzzle {
     fn solve(&mut self) -> Result<()> {
         let mut max = [0; 3];
+        // Alternative: use `StrExt::line_blocks`.
         let mut lines = self.input.lines().peekable();
         while lines.peek().is_some() {
             let block = lines.by_ref().take_while(|l| !l.is_empty());

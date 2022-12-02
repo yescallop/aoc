@@ -14,7 +14,7 @@ Here is an example of solution code (typically located at `/src/solution/year_20
 use super::*;
 
 impl Solution<2077, 1> for Puzzle {
-    fn solve(&self) -> Result<()> {
+    fn solve(&mut self) -> Result<()> {
         self.output(self.input.len());
         self.output(self.input.lines().count());
         Ok(())
