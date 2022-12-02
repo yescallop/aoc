@@ -105,3 +105,78 @@ impl Solution<2021, 3> for Puzzle {
         Ok(())
     }
 }
+
+impl Solution<2021, 4> for Puzzle {
+    fn solve(&mut self) -> Result<()> {
+        let mut lines = self.input.lines();
+        let nums_to_mark = lines
+            .next()
+            .ok()?
+            .split(',')
+            .map(u8::from_str)
+            .collect::<Result<Vec<_>, _>>()?;
+
+        let mut boards = Vec::with_capacity(100);
+        while let Some(_blank) = lines.next() {
+            let mut board = [0u8; 25];
+            let mut i = 0;
+            for _ in 0..5 {
+                let mut iter = lines.next().ok()?.split_ascii_whitespace();
+                for _ in 0..5 {
+                    board[i] = iter.next().ok()?.parse()?;
+                    i += 1;
+                }
+            }
+            boards.push((board, 0u32));
+        }
+        let boards_cnt = boards.len();
+
+        #[allow(clippy::unusual_byte_groupings)]
+        fn mask(i: usize) -> (u32, u32) {
+            let (row, col) = (i / 5, i % 5);
+            (0b11111 << (row * 5), 0b1_00001_00001_00001_00001 << col)
+        }
+
+        let mut boards_won = 0;
+        for &num_to_mark in &nums_to_mark {
+            for (board, marked) in &mut boards {
+                if (*marked as i32) < 0 {
+                    // Already won.
+                    continue;
+                }
+                let Some(mark_i) = board.iter().position(|&x| x == num_to_mark) else {
+                    continue;
+                };
+                *marked |= 1 << mark_i;
+
+                let mask = mask(mark_i);
+                if *marked & mask.0 != mask.0 && *marked & mask.1 != mask.1 {
+                    continue;
+                }
+
+                // Mark as won.
+                *marked |= 1 << 31;
+                boards_won += 1;
+
+                if boards_won > 1 && boards_won < boards_cnt {
+                    continue;
+                }
+
+                let mut x = *marked;
+                let mut sum = 0u32;
+                for num in board {
+                    if x & 1 == 0 {
+                        sum += *num as u32;
+                    }
+                    x >>= 1;
+                }
+                self.output(sum * num_to_mark as u32);
+
+                if boards_won == boards_cnt {
+                    return Ok(());
+                }
+            }
+        }
+        err!();
+    }
+}
