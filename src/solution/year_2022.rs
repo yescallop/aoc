@@ -30,7 +30,7 @@ impl Solution<2022, 2> for Puzzle {
     fn solve(&mut self) -> Result<()> {
         let mut sum = (0, 0);
         for line in self.input.lines() {
-            let &[a @ b'A'..=b'C', b' ', x @ b'X'..=b'Z'] = line.as_bytes() else {
+            let [a @ b'A'..=b'C', _, x @ b'X'..=b'Z'] = line.as_bytes() else {
                 err!();
             };
             let (opponent, x) = (a - b'A', x - b'X');
