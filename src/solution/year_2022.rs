@@ -28,26 +28,27 @@ impl Solution<2022, 1> for Puzzle {
 
 impl Solution<2022, 2> for Puzzle {
     fn solve(&mut self) -> Result<()> {
-        let mut total = (0, 0);
+        let mut sum = (0, 0);
         for line in self.input.lines() {
             let &[a @ b'A'..=b'C', b' ', x @ b'X'..=b'Z'] = line.as_bytes() else {
                 err!();
             };
-            let (opp, x) = (a - b'A', x - b'X');
+            let (opponent, x) = (a - b'A', x - b'X');
 
-            let you = x;
-            let outcome = (4 + you - opp) % 3;
-            let score = (you + 1) + outcome * 3;
-            total.0 += score as u32;
+            // me, opponent: 0 = Rock, 1 = Paper, 2 = Scissors
+            // outcome: 0 = Loss, 1 = Draw, 2 = Win
+            // 1 + me - opponent ≡ outcome (mod 3)
+            let me = x;
+            let outcome = (4 + me - opponent) % 3;
+            sum.0 += (1 + me + outcome * 3) as u32;
 
             let outcome = x;
-            let you = (2 + opp + outcome) % 3;
-            let score = (you + 1) + outcome * 3;
-            total.1 += score as u32;
+            let me = (2 + outcome + opponent) % 3;
+            sum.1 += (1 + me + outcome * 3) as u32;
         }
 
-        self.output(total.0);
-        self.output(total.1);
+        self.output(sum.0);
+        self.output(sum.1);
         Ok(())
     }
 }
