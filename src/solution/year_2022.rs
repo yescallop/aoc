@@ -28,7 +28,7 @@ impl Solution<2022, 1> for Puzzle {
 
 impl Solution<2022, 2> for Puzzle {
     fn solve(&mut self) -> Result<()> {
-        // Cursed solution for speed:
+        // For speed:
         //
         // #[cfg(target_endian = "big")]
         // compile_error!("LE only");
