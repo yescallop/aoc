@@ -69,27 +69,27 @@ impl Solution<2022, 2> for Puzzle {
 
 impl Solution<2022, 3> for Puzzle {
     fn solve(&mut self) -> Result<()> {
-        fn priority(x: u64) -> u32 {
-            let common = x.trailing_zeros();
-            if common < 26 {
-                common + 27
+        fn priority(common: u64) -> u32 {
+            let x = common.trailing_zeros();
+            if x < 26 {
+                x + 27
             } else {
-                common - (b'a' - b'A') as u32 + 1
+                x - (b'a' - b'A') as u32 + 1
             }
         }
 
         let mut lines = self.input.lines().peekable();
         let mut sum = (0, 0);
         while lines.peek().is_some() {
-            let mut group = u64::MAX;
+            let mut group = !0;
             for _ in 0..3 {
                 let line = lines.next().ok()?.as_bytes();
                 let comp_len = line.len() / 2;
 
-                let first: u64 = line[..comp_len]
+                let first = line[..comp_len]
                     .iter()
                     .fold(0, |acc, x| acc | (1u64 << (x - b'A')));
-                let second: u64 = line[comp_len..]
+                let second = line[comp_len..]
                     .iter()
                     .fold(0, |acc, x| acc | (1u64 << (x - b'A')));
                 sum.0 += priority(first & second);
