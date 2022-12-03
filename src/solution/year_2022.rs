@@ -28,6 +28,20 @@ impl Solution<2022, 1> for Puzzle {
 
 impl Solution<2022, 2> for Puzzle {
     fn solve(&mut self) -> Result<()> {
+        // Cursed solution for speed:
+        //
+        // #[cfg(target_endian = "big")]
+        // compile_error!("LE only");
+        // // SAFETY: It's fine.
+        // let (a, lines, b) = unsafe { self.input.as_bytes().align_to::<u32>() };
+        // ensure!(a.is_empty() && b.is_empty());
+        // let mut sum = (0, 0);
+        // for x in lines {
+        //     let t = ((x | x >> 14) & 0xf) * 4;
+        //     sum.0 += (0x693025807140u64 >> t) as u32 & 0xf;
+        //     sum.1 += (0x798065402130u64 >> t) as u32 & 0xf;
+        // }
+
         let mut sum = (0, 0);
         for line in self.input.lines() {
             let [a @ b'A'..=b'C', _, x @ b'X'..=b'Z'] = line.as_bytes() else {
@@ -45,6 +59,43 @@ impl Solution<2022, 2> for Puzzle {
             let outcome = x;
             let me = (2 + outcome + opponent) % 3;
             sum.1 += (1 + me + outcome * 3) as u32;
+        }
+
+        self.output(sum.0);
+        self.output(sum.1);
+        Ok(())
+    }
+}
+
+impl Solution<2022, 3> for Puzzle {
+    fn solve(&mut self) -> Result<()> {
+        fn priority(x: u64) -> u32 {
+            let common = x.trailing_zeros();
+            if common < 26 {
+                common + 27
+            } else {
+                common - (b'a' - b'A') as u32 + 1
+            }
+        }
+
+        let mut lines = self.input.lines().peekable();
+        let mut sum = (0, 0);
+        while lines.peek().is_some() {
+            let mut group = u64::MAX;
+            for _ in 0..3 {
+                let line = lines.next().ok()?.as_bytes();
+                let comp_len = line.len() / 2;
+
+                let first: u64 = line[..comp_len]
+                    .iter()
+                    .fold(0, |acc, x| acc | (1u64 << (x - b'A')));
+                let second: u64 = line[comp_len..]
+                    .iter()
+                    .fold(0, |acc, x| acc | (1u64 << (x - b'A')));
+                sum.0 += priority(first & second);
+                group &= first | second;
+            }
+            sum.1 += priority(group);
         }
 
         self.output(sum.0);
