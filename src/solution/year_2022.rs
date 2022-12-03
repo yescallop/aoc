@@ -38,8 +38,8 @@ impl Solution<2022, 2> for Puzzle {
         // let mut sum = (0, 0);
         // for x in lines {
         //     let t = ((x | x >> 14) & 0xf) * 4;
-        //     sum.0 += (0x693025807140u64 >> t) as u32 & 0xf;
-        //     sum.1 += (0x798065402130u64 >> t) as u32 & 0xf;
+        //     sum.0 += (0x693025807140u64 >> t) & 0xf;
+        //     sum.1 += (0x798065402130u64 >> t) & 0xf;
         // }
 
         let mut sum = (0, 0);
