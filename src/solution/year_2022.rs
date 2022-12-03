@@ -84,18 +84,16 @@ impl Solution<2022, 3> for Puzzle {
             let mut group = !0;
             for _ in 0..3 {
                 let line = lines.next().ok()?.as_bytes();
-                let comp_len = line.len() / 2;
+                let (l, r) = line.split_at(line.len() / 2);
 
                 // Subtracting with 64 is generally faster than with b'A' (65),
                 // since shifts are 6-bit masked on ARM and Intel.
-                let first = line[..comp_len]
-                    .iter()
-                    .fold(0, |acc, x| acc | (1u64 << (x - 64)));
-                let second = line[comp_len..]
-                    .iter()
-                    .fold(0, |acc, x| acc | (1u64 << (x - 64)));
-                sum.0 += priority(first & second);
-                group &= first | second;
+                let bitset = |acc, x| acc | (1u64 << (x - 64));
+                let l = l.iter().fold(0, bitset);
+                let r = r.iter().fold(0, bitset);
+                
+                sum.0 += priority(l & r);
+                group &= l | r;
             }
             sum.1 += priority(group);
         }
