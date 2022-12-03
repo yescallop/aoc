@@ -71,10 +71,10 @@ impl Solution<2022, 3> for Puzzle {
     fn solve(&mut self) -> Result<()> {
         fn priority(common: u64) -> u32 {
             let x = common.trailing_zeros();
-            if x < 26 {
-                x + 27
+            if x < 27 {
+                x + 26
             } else {
-                x - (b'a' - b'A') as u32 + 1
+                x - (b'a' - b'A') as u32
             }
         }
 
@@ -86,12 +86,14 @@ impl Solution<2022, 3> for Puzzle {
                 let line = lines.next().ok()?.as_bytes();
                 let comp_len = line.len() / 2;
 
+                // Subtracting with 64 is generally faster than with b'A' (65),
+                // since shifts are 6-bit masked on ARM and Intel.
                 let first = line[..comp_len]
                     .iter()
-                    .fold(0, |acc, x| acc | (1u64 << (x - b'A')));
+                    .fold(0, |acc, x| acc | (1u64 << (x - 64)));
                 let second = line[comp_len..]
                     .iter()
-                    .fold(0, |acc, x| acc | (1u64 << (x - b'A')));
+                    .fold(0, |acc, x| acc | (1u64 << (x - 64)));
                 sum.0 += priority(first & second);
                 group &= first | second;
             }
