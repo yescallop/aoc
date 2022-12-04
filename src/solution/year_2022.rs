@@ -91,7 +91,7 @@ impl Solution<2022, 3> for Puzzle {
                 let bitset = |acc, x| acc | (1u64 << (x - 64));
                 let l = l.iter().fold(0, bitset);
                 let r = r.iter().fold(0, bitset);
-                
+
                 sum.0 += priority(l & r);
                 group &= l | r;
             }
@@ -100,6 +100,33 @@ impl Solution<2022, 3> for Puzzle {
 
         self.output(sum.0);
         self.output(sum.1);
+        Ok(())
+    }
+}
+
+impl Solution<2022, 4> for Puzzle {
+    fn solve(&mut self) -> Result<()> {
+        fn range(s: &str) -> Option<(u32, u32)> {
+            let (l, r) = s.split_once('-')?;
+            l.parse().ok().zip(r.parse().ok())
+        }
+        fn contains(a: (u32, u32), b: (u32, u32)) -> bool {
+            b.0 >= a.0 && b.1 <= a.1
+        }
+        fn overlaps(a: (u32, u32), b: (u32, u32)) -> bool {
+            !(b.0 > a.1 || b.1 < a.0)
+        }
+
+        let mut cnt = (0, 0);
+        for line in self.input.lines() {
+            let (l, r) = line.split_once(',').ok()?;
+            let (l, r) = range(l).zip(range(r)).ok()?;
+            cnt.0 += (contains(l, r) || contains(r, l)) as u32;
+            cnt.1 += overlaps(l, r) as u32;
+        }
+
+        self.output(cnt.0);
+        self.output(cnt.1);
         Ok(())
     }
 }
