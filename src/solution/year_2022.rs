@@ -228,12 +228,47 @@ impl Solution<2022, 6> for Puzzle {
             true
         }
 
-        let bytes = self.input.as_bytes();
-        let pos_1 = bytes.windows(4).position(all_distinct);
-        let pos_2 = bytes.windows(14).position(all_distinct);
+        // See also: https://github.com/orlp/aoc2022/blob/master/src/bin/day06.rs
+        fn solve_memoized<const N: usize>(bytes: &[u8]) -> Option<usize> {
+            if bytes.len() < N {
+                return None;
+            }
+            // In the current N-byte window:
+            // The number of bytes with a certain value;
+            let mut byte_cnt = [0u8; 256];
+            // The number of distinct byte values.
+            let mut value_cnt = 0;
 
-        self.output(pos_1.ok()? + 4);
-        self.output(pos_2.ok()? + 14);
+            for i in 0..N {
+                let in_cnt = &mut byte_cnt[bytes[i] as usize];
+                value_cnt += (*in_cnt == 0) as usize;
+                *in_cnt += 1;
+            }
+
+            let pos = bytes.windows(N + 1).position(|window| {
+                let &[out_byte, .., in_byte] = window else {
+                    unreachable!();
+                };
+
+                let out_cnt = &mut byte_cnt[out_byte as usize];
+                *out_cnt -= 1;
+                value_cnt -= (*out_cnt == 0) as usize;
+
+                let in_cnt = &mut byte_cnt[in_byte as usize];
+                value_cnt += (*in_cnt == 0) as usize;
+                *in_cnt += 1;
+
+                value_cnt == N
+            });
+            pos.map(|i| i + N + 1)
+        }
+
+        let bytes = self.input.as_bytes();
+        let ans1 = bytes.windows(4).position(all_distinct).ok()? + 4;
+        let ans2 = solve_memoized::<14>(bytes).ok()?;
+
+        self.output(ans1);
+        self.output(ans2);
         Ok(())
     }
 }
