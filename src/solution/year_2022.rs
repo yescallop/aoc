@@ -211,3 +211,29 @@ impl Solution<2022, 5> for Puzzle {
         Ok(())
     }
 }
+
+impl Solution<2022, 6> for Puzzle {
+    fn solve(&mut self) -> Result<()> {
+        fn all_distinct(bytes: &[u8]) -> bool {
+            let mut flags = 0u32;
+            for x in bytes {
+                // Subtracting with 96 is faster than with b'a' (97).
+                // See also: comments in Day 3.
+                let mask = 1 << (x - 96);
+                if flags & mask != 0 {
+                    return false;
+                }
+                flags |= mask;
+            }
+            true
+        }
+
+        let bytes = self.input.as_bytes();
+        let pos_1 = bytes.windows(4).position(all_distinct);
+        let pos_2 = bytes.windows(14).position(all_distinct);
+
+        self.output(pos_1.ok()? + 4);
+        self.output(pos_2.ok()? + 14);
+        Ok(())
+    }
+}
