@@ -1,3 +1,5 @@
+use std::mem;
+
 use super::*;
 
 // Alternative: collect into a `Vec` and use `{sort, select_nth}_unstable_by`.
@@ -111,7 +113,8 @@ impl Solution<2022, 4> for Puzzle {
             l.parse().ok().zip(r.parse().ok())
         }
         fn contains(a: (u32, u32), b: (u32, u32)) -> bool {
-            b.0 >= a.0 && b.1 <= a.1
+            let (x, y) = (b.0 as i32 - a.0 as i32, b.1 as i32 - a.1 as i32);
+            x * y <= 0
         }
         fn overlaps(a: (u32, u32), b: (u32, u32)) -> bool {
             !(b.0 > a.1 || b.1 < a.0)
@@ -121,12 +124,89 @@ impl Solution<2022, 4> for Puzzle {
         for line in self.input.lines() {
             let (l, r) = line.split_once(',').ok()?;
             let (l, r) = range(l).zip(range(r)).ok()?;
-            cnt.0 += (contains(l, r) || contains(r, l)) as u32;
+            cnt.0 += contains(l, r) as u32;
             cnt.1 += overlaps(l, r) as u32;
         }
 
         self.output(cnt.0);
         self.output(cnt.1);
+        Ok(())
+    }
+}
+
+impl Solution<2022, 5> for Puzzle {
+    fn solve(&mut self) -> Result<()> {
+        fn get_two_mut<T>(slice: &mut [T], mut i: usize, mut j: usize) -> (&mut T, &mut T) {
+            let rev = i > j;
+            if rev {
+                mem::swap(&mut i, &mut j);
+            }
+            let [a, .., b] = &mut slice[i..=j] else {
+                panic!("duplicate index");
+            };
+            if rev {
+                (b, a)
+            } else {
+                (a, b)
+            }
+        }
+
+        let line_len = self.input.lines().next().ok()?.len();
+        ensure!(line_len <= 35 && line_len % 4 == 3);
+
+        let stack_cnt = line_len / 4 + 1;
+        let mut stacks = vec![Vec::<u8>::new(); stack_cnt];
+
+        let mut lines = self.input.lines();
+        for line in &mut lines {
+            let line = line.as_bytes();
+            ensure!(line.len() == line_len);
+            if line[1] == b'1' {
+                break;
+            }
+
+            for i in 0..stack_cnt {
+                let x = line[i * 4 + 1];
+                if x != b' ' {
+                    stacks[i].push(x);
+                }
+            }
+        }
+
+        stacks.iter_mut().for_each(|s| s.reverse());
+        let mut stacks_2 = stacks.clone();
+
+        ensure!(lines.next().ok()?.is_empty());
+        for line in lines {
+            let mut iter = line.split(' ').skip(1).step_by(2);
+            let cnt: usize = iter.next().ok()?.parse()?;
+
+            let mut from_i: usize = iter.next().ok()?.parse()?;
+            let mut to_i: usize = iter.next().ok()?.parse()?;
+            ensure!(from_i > 0 && to_i > 0);
+
+            from_i -= 1;
+            to_i -= 1;
+            ensure!(from_i < stack_cnt && to_i < stack_cnt && from_i != to_i);
+
+            // For CrateMover 9000:
+            let (from, to) = get_two_mut(&mut stacks, from_i, to_i);
+            ensure!(cnt <= from.len());
+            to.extend(from.drain(from.len() - cnt..).rev());
+
+            // For CrateMover 9001:
+            let (from, to) = get_two_mut(&mut stacks_2, from_i, to_i);
+            ensure!(cnt <= from.len());
+            to.extend(from.drain(from.len() - cnt..));
+        }
+
+        let mut ans = (String::new(), String::new());
+        for i in 0..stack_cnt {
+            ans.0.push(*stacks[i].last().ok()? as char);
+            ans.1.push(*stacks_2[i].last().ok()? as char);
+        }
+        self.output(ans.0);
+        self.output(ans.1);
         Ok(())
     }
 }
