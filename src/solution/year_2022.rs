@@ -178,11 +178,11 @@ impl Solution<2022, 5> for Puzzle {
 
         ensure!(lines.next().ok()?.is_empty());
         for line in lines {
-            let mut iter = line.split(' ').skip(1).step_by(2);
-            let cnt: usize = iter.next().ok()?.parse()?;
+            let mut iter = line.split(' ');
+            let cnt: usize = iter.nth(1).ok()?.parse()?;
 
-            let mut from_i: usize = iter.next().ok()?.parse()?;
-            let mut to_i: usize = iter.next().ok()?.parse()?;
+            let mut from_i: usize = iter.nth(1).ok()?.parse()?;
+            let mut to_i: usize = iter.nth(1).ok()?.parse()?;
             ensure!(from_i > 0 && to_i > 0);
 
             from_i -= 1;
