@@ -152,10 +152,11 @@ impl Solution<2022, 5> for Puzzle {
         }
 
         let line_len = self.input.lines().next().ok()?.len();
-        ensure!(line_len <= 35 && line_len % 4 == 3);
-
         let stack_cnt = line_len / 4 + 1;
-        let mut stacks = vec![Vec::<u8>::new(); stack_cnt];
+        ensure!(line_len % 4 == 3 && stack_cnt <= 9);
+
+        const EMPTY_VEC: Vec<u8> = Vec::new();
+        let mut stacks = [EMPTY_VEC; 9];
 
         let mut lines = self.input.lines();
         for line in &mut lines {
