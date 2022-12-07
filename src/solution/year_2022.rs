@@ -214,58 +214,39 @@ impl Solution<2022, 5> for Puzzle {
 
 impl Solution<2022, 6> for Puzzle {
     fn solve(&mut self) -> Result<()> {
-        fn all_distinct(bytes: &[u8]) -> bool {
-            let mut flags = 0u32;
-            for x in bytes {
-                // Subtracting with 96 is faster than with b'a' (97).
-                // See also: comments in Day 3.
-                let mask = 1 << (x - 96);
-                if flags & mask != 0 {
-                    return false;
-                }
-                flags |= mask;
-            }
-            true
-        }
-
-        // Original: https://github.com/orlp/aoc2022/blob/master/src/bin/day06.rs
-        fn solve_memoized<const N: usize>(bytes: &[u8]) -> Option<usize> {
+        fn solve_xor<const N: usize>(bytes: &[u8]) -> Option<usize> {
             if bytes.len() < N {
                 return None;
             }
-            // In the current N-byte window:
-            // The number of bytes with a certain value;
-            let mut byte_cnt = [0u8; 256];
-            // The number of distinct byte values.
-            let mut value_cnt = 0;
 
+            // flag = number of a byte value in the current window
+            //    0 = zero or even
+            //    1 = one or odd
+            // current window contains no duplicates iff `flags.count_ones() == N`
+            let mut flags = 0u32;
             for i in 0..N {
-                let in_cnt = &mut byte_cnt[bytes[i] as usize];
-                value_cnt += (*in_cnt == 0) as usize;
-                *in_cnt += 1;
+                // Subtracting with 96 (b'a' - 1) is no-op.
+                // See also: comments in Day 3.
+                flags ^= 1 << (bytes[i] - 96);
+            }
+            if flags.count_ones() == N as u32 {
+                return Some(4);
             }
 
-            let pos = bytes.windows(N + 1).position(|window| {
-                let &[out_byte, .., in_byte] = window else {
+            let pos = bytes.windows(N + 1).position(|one_larger_window| {
+                let &[out_byte, .., in_byte] = one_larger_window else {
                     unreachable!();
                 };
-
-                let out_cnt = &mut byte_cnt[out_byte as usize];
-                *out_cnt -= 1;
-                value_cnt -= (*out_cnt == 0) as usize;
-
-                let in_cnt = &mut byte_cnt[in_byte as usize];
-                value_cnt += (*in_cnt == 0) as usize;
-                *in_cnt += 1;
-
-                value_cnt == N
+                flags ^= 1 << (out_byte - 96);
+                flags ^= 1 << (in_byte - 96);
+                flags.count_ones() == N as u32
             });
             pos.map(|i| i + N + 1)
         }
 
         let bytes = self.input.as_bytes();
-        let ans1 = bytes.windows(4).position(all_distinct).ok()? + 4;
-        let ans2 = solve_memoized::<14>(bytes).ok()?;
+        let ans1 = solve_xor::<4>(bytes).ok()?;
+        let ans2 = solve_xor::<14>(bytes).ok()?;
 
         self.output(ans1);
         self.output(ans2);
