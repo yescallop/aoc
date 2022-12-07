@@ -228,7 +228,7 @@ impl Solution<2022, 6> for Puzzle {
             true
         }
 
-        // See also: https://github.com/orlp/aoc2022/blob/master/src/bin/day06.rs
+        // Original: https://github.com/orlp/aoc2022/blob/master/src/bin/day06.rs
         fn solve_memoized<const N: usize>(bytes: &[u8]) -> Option<usize> {
             if bytes.len() < N {
                 return None;
