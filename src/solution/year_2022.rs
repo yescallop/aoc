@@ -321,3 +321,110 @@ impl Solution<2022, 7> for Puzzle {
         Ok(())
     }
 }
+
+impl Solution<2022, 8> for Puzzle {
+    fn solve(&mut self) -> Result<()> {
+        let width = self.input.lines().next().ok()?.len();
+
+        let mut rows = Vec::with_capacity(width);
+        let mut visible: Vec<Vec<bool>> = Vec::with_capacity(width);
+
+        let mut max_from_top = vec![0u8; width];
+
+        for row in self.input.lines().map(str::as_bytes) {
+            ensure!(row.len() == width);
+            let mut vis_row = vec![false; width];
+
+            let mut max_from_left = 0;
+            for i in 0..width {
+                let h = row[i];
+                if h > max_from_left {
+                    vis_row[i] = true;
+                    max_from_left = h;
+                }
+                if h > max_from_top[i] {
+                    vis_row[i] = true;
+                    max_from_top[i] = h;
+                }
+            }
+
+            let mut max_from_right = 0;
+            for i in (0..width).rev() {
+                let h = row[i];
+                if h > max_from_right {
+                    vis_row[i] = true;
+                    max_from_right = h;
+                    if h == max_from_left {
+                        break;
+                    }
+                }
+            }
+
+            rows.push(row);
+            visible.push(vis_row);
+        }
+
+        let mut max_from_bottom = vec![0u8; width];
+        let mut cols_done = 0;
+
+        for (row, vis_row) in rows.iter().zip(visible.iter_mut()).rev() {
+            assert!(row.len() == width && vis_row.len() == width);
+
+            for i in 0..width {
+                let h = row[i];
+                if h > max_from_bottom[i] {
+                    vis_row[i] = true;
+                    max_from_bottom[i] = h;
+                    cols_done += (h == max_from_top[i]) as usize;
+                }
+            }
+            if cols_done == width {
+                break;
+            }
+        }
+
+        let visible_cnt = visible.iter().flatten().filter(|&&b| b).count();
+
+        let height = rows.len();
+        let mut max_score = 0;
+
+        for y in 0..height {
+            let row = rows[y];
+            for x in 0..width {
+                let h = row[x];
+
+                let up = rows[..y]
+                    .iter()
+                    .rev()
+                    .position(|r| r[x] >= h)
+                    .map(|i| i + 1)
+                    .unwrap_or(y);
+                let left = row[..x]
+                    .iter()
+                    .rev()
+                    .position(|&v| v >= h)
+                    .map(|i| i + 1)
+                    .unwrap_or(x);
+                let down = rows[y + 1..]
+                    .iter()
+                    .position(|r| r[x] >= h)
+                    .map(|i| i + 1)
+                    .unwrap_or(height - y - 1);
+                let right = row[x + 1..]
+                    .iter()
+                    .position(|&v| v >= h)
+                    .map(|i| i + 1)
+                    .unwrap_or(width - x - 1);
+
+                let score = up * left * down * right;
+                if score > max_score {
+                    max_score = score;
+                }
+            }
+        }
+
+        self.output(visible_cnt);
+        self.output(max_score);
+        Ok(())
+    }
+}
