@@ -177,7 +177,7 @@ impl Solution<2022, 5> for Puzzle {
         stacks.iter_mut().for_each(|s| s.reverse());
         let mut stacks_2 = stacks.clone();
 
-        ensure!(lines.next().ok()?.is_empty());
+        ensure!(lines.next() == Some(""));
         for line in lines {
             let mut iter = line.split(' ');
             let cnt: usize = iter.nth(1).ok()?.parse()?;
@@ -250,6 +250,74 @@ impl Solution<2022, 6> for Puzzle {
 
         self.output(ans1);
         self.output(ans2);
+        Ok(())
+    }
+}
+
+impl Solution<2022, 7> for Puzzle {
+    fn solve(&mut self) -> Result<()> {
+        struct Dir {
+            parent: i32,
+            size: u32,
+        }
+
+        let mut dirs = Vec::<Dir>::new();
+        let mut cur_i = -1;
+
+        for line in self.input.lines() {
+            if line.starts_with('$') {
+                match line.strip_prefix("$ cd ") {
+                    Some("..") => {
+                        ensure!(cur_i > 0);
+                        cur_i = dirs[cur_i as usize].parent;
+                    }
+                    Some(_) => {
+                        let next_i = dirs.len() as i32;
+                        dirs.push(Dir {
+                            parent: cur_i,
+                            size: 0,
+                        });
+                        cur_i = next_i;
+                    }
+                    None => {}
+                }
+                continue;
+            }
+
+            let (attr, _) = line.split_once(' ').ok()?;
+            if let Ok(size) = attr.parse::<u32>() {
+                let mut i = cur_i;
+                while i >= 0 {
+                    dirs[i as usize].size += size;
+                    i = dirs[i as usize].parent;
+                }
+            }
+        }
+
+        let ans1: u32 = dirs
+            .iter()
+            .map(|dir| dir.size)
+            .filter(|&size| size <= 100000)
+            .sum();
+        self.output(ans1);
+
+        const TOTAL_SPACE: u32 = 70000000;
+        const REQUIRED_SPACE: u32 = 30000000;
+
+        ensure!(!dirs.is_empty());
+        let used = dirs[0].size;
+        ensure!(used <= TOTAL_SPACE);
+        let unused = TOTAL_SPACE - used;
+        ensure!(unused < REQUIRED_SPACE);
+        let min_to_delete = REQUIRED_SPACE - unused;
+
+        let ans2 = dirs
+            .iter()
+            .map(|dir| dir.size)
+            .filter(|&size| size >= min_to_delete)
+            .min();
+        self.output(ans2.unwrap());
+
         Ok(())
     }
 }
