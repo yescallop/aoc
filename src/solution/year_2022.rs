@@ -1,4 +1,4 @@
-use std::mem;
+use std::{collections::HashSet, mem};
 
 use super::*;
 
@@ -416,6 +416,65 @@ impl Solution<2022, 8> for Puzzle {
 
         self.output(visible_cnt);
         self.output(max_score);
+        Ok(())
+    }
+}
+
+impl Solution<2022, 9> for Puzzle {
+    fn solve(&mut self) -> Result<()> {
+        #[derive(Clone, Copy, Default, PartialEq, Eq, Hash)]
+        struct Point {
+            x: i32,
+            y: i32,
+        }
+
+        let mut knots = [Point::default(); 10];
+
+        let mut knot_1_track = HashSet::new();
+        knot_1_track.insert(Point::default());
+        let mut knot_9_track = HashSet::new();
+        knot_9_track.insert(Point::default());
+
+        for line in self.input.lines() {
+            let (direction, step) = line.split_once(' ').ok()?;
+            let (dx, dy) = match direction {
+                "U" => (0, 1),
+                "R" => (1, 0),
+                "D" => (0, -1),
+                "L" => (-1, 0),
+                _ => err!(),
+            };
+            let step: i32 = step.parse()?;
+
+            for _ in 0..step {
+                knots[0].x += dx;
+                knots[0].y += dy;
+
+                for i in 1..10 {
+                    let [front, cur] = &mut knots[i - 1..=i] else {
+                        unreachable!();
+                    };
+                    let diff_x = front.x - cur.x;
+                    let diff_y = front.y - cur.y;
+
+                    if diff_x.abs() == 2 || diff_y.abs() == 2 {
+                        cur.x += diff_x.signum();
+                        cur.y += diff_y.signum();
+                    } else {
+                        break;
+                    }
+
+                    if i == 1 {
+                        knot_1_track.insert(*cur);
+                    } else if i == 9 {
+                        knot_9_track.insert(*cur);
+                    }
+                }
+            }
+        }
+
+        self.output(knot_1_track.len());
+        self.output(knot_9_track.len());
         Ok(())
     }
 }
