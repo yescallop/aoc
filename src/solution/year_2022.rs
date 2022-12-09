@@ -224,10 +224,10 @@ impl Solution<2022, 6> for Puzzle {
             //    1 = one or odd
             // current window contains no duplicates iff `flags.count_ones() == N`
             let mut flags = 0u32;
-            for i in 0..N {
+            for in_byte in bytes.iter().take(N) {
                 // Subtracting with 96 (b'a' - 1) is no-op.
                 // See also: comments in Day 3.
-                flags ^= 1 << (bytes[i] - 96);
+                flags ^= 1 << (in_byte - 96);
             }
             if flags.count_ones() == N as u32 {
                 return Some(4);
@@ -385,36 +385,27 @@ impl Solution<2022, 8> for Puzzle {
 
         let visible_cnt = visible.iter().flatten().filter(|&&b| b).count();
 
-        let height = rows.len();
+        fn viewing_dis(h: u8, mut iter: impl Iterator<Item = u8>) -> u32 {
+            let mut dis = 0;
+            iter.find(|&cur_h| {
+                dis += 1;
+                cur_h >= h
+            });
+            dis
+        }
+
         let mut max_score = 0;
 
-        for y in 0..height {
+        for y in 0..rows.len() {
             let row = rows[y];
             for x in 0..width {
                 let h = row[x];
+                let get_h = |row: &&[u8]| row[x];
 
-                let up = rows[..y]
-                    .iter()
-                    .rev()
-                    .position(|r| r[x] >= h)
-                    .map(|i| i + 1)
-                    .unwrap_or(y);
-                let left = row[..x]
-                    .iter()
-                    .rev()
-                    .position(|&v| v >= h)
-                    .map(|i| i + 1)
-                    .unwrap_or(x);
-                let down = rows[y + 1..]
-                    .iter()
-                    .position(|r| r[x] >= h)
-                    .map(|i| i + 1)
-                    .unwrap_or(height - y - 1);
-                let right = row[x + 1..]
-                    .iter()
-                    .position(|&v| v >= h)
-                    .map(|i| i + 1)
-                    .unwrap_or(width - x - 1);
+                let up = viewing_dis(h, rows[..y].iter().rev().map(get_h));
+                let left = viewing_dis(h, row[..x].iter().rev().copied());
+                let down = viewing_dis(h, rows[y + 1..].iter().map(get_h));
+                let right = viewing_dis(h, row[x + 1..].iter().copied());
 
                 let score = up * left * down * right;
                 if score > max_score {
