@@ -457,7 +457,7 @@ impl Solution<2022, 9> for Puzzle {
                     let diff_x = front.x - cur.x;
                     let diff_y = front.y - cur.y;
 
-                    if diff_x.abs() == 2 || diff_y.abs() == 2 {
+                    if diff_x.abs().max(diff_y.abs()) > 1 {
                         cur.x += diff_x.signum();
                         cur.y += diff_y.signum();
                     } else {
