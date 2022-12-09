@@ -224,7 +224,7 @@ impl Solution<2022, 6> for Puzzle {
             //    1 = one or odd
             // current window contains no duplicates iff `flags.count_ones() == N`
             let mut flags = 0u32;
-            for in_byte in bytes.iter().take(N) {
+            for in_byte in &bytes[..N] {
                 // Subtracting with 96 (b'a' - 1) is no-op.
                 // See also: comments in Day 3.
                 flags ^= 1 << (in_byte - 96);
@@ -444,7 +444,7 @@ impl Solution<2022, 9> for Puzzle {
                 "L" => (-1, 0),
                 _ => err!(),
             };
-            let step: i32 = step.parse()?;
+            let step: u32 = step.parse()?;
 
             for _ in 0..step {
                 knots[0].x += dx;
