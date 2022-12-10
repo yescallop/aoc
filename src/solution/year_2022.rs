@@ -493,23 +493,26 @@ impl Solution<2022, 9> for Puzzle {
                 knots[0].x += dx;
                 knots[0].y += dy;
 
-                for i in 1..10 {
-                    let (front, cur) = (knots[i - 1], &mut knots[i]);
-                    let diff_x = front.x - cur.x;
-                    let diff_y = front.y - cur.y;
+                let mut i = 1;
+                while i < 10 {
+                    let (front, back) = (knots[i - 1], &mut knots[i]);
+                    let diff_x = front.x - back.x;
+                    let diff_y = front.y - back.y;
 
-                    if diff_x.abs().max(diff_y.abs()) > 1 {
-                        cur.x += diff_x.signum();
-                        cur.y += diff_y.signum();
+                    if diff_x.abs() > 1 || diff_y.abs() > 1 {
+                        back.x += diff_x.signum();
+                        back.y += diff_y.signum();
                     } else {
                         break;
                     }
+                    i += 1;
+                }
 
-                    if i == 1 {
-                        cur.set_in(&mut knot_1_track);
-                    } else if i == 9 {
-                        cur.set_in(&mut knot_9_track);
-                    }
+                if i > 1 {
+                    knots[1].set_in(&mut knot_1_track);
+                }
+                if i > 9 {
+                    knots[9].set_in(&mut knot_9_track);
                 }
             }
         }
@@ -563,7 +566,7 @@ impl Solution<2022, 10> for Puzzle {
                 if self.cycles_countdown == 0 {
                     match self.cur_instr.take() {
                         None | Some(Instr::Noop) => (),
-                        Some(Instr::AddX(v)) => self.x += v,
+                        Some(Instr::AddX(imm)) => self.x += imm,
                     }
 
                     if let Some(instr) = self.instrs.next() {
@@ -579,13 +582,10 @@ impl Solution<2022, 10> for Puzzle {
             }
         }
 
-        let instrs = self.input.lines().filter_map(|line| {
-            let mut args = line.split(' ');
-            match args.next()? {
-                "noop" => Some(Instr::Noop),
-                "addx" => Some(Instr::AddX(args.next()?.parse().ok()?)),
-                _ => None,
-            }
+        let instrs = self.input.lines().map(|line| {
+            line.strip_prefix("addx ")
+                .and_then(|imm| imm.parse().map(Instr::AddX).ok())
+                .unwrap_or(Instr::Noop)
         });
 
         let mut signal_strength_sum = 0;

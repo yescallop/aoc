@@ -54,19 +54,27 @@ pub fn solutions() -> &'static [DynSolution] {
     })
 }
 
-fn parse_args() -> Option<(u32, Option<u32>)> {
+fn parse_args() -> Option<Option<(u32, Option<u32>)>> {
     let mut args = std::env::args();
     args.next();
 
-    let year = args.next()?.parse().ok()?;
-    let day = args.next().and_then(|arg| arg.parse().ok());
-    Some((year, day))
+    let Some(year) = args.next() else {
+        return Some(None);
+    };
+    let year = year.parse().ok()?;
+
+    let Some(day) = args.next() else {
+        return Some(Some((year, None)));
+    };
+    let day = day.parse().ok()?;
+
+    Some(Some((year, Some(day))))
 }
 
 pub fn solution_by_args() -> Option<&'static DynSolution> {
     let sols = solutions();
 
-    match parse_args() {
+    match parse_args()? {
         Some((year, Some(day))) => sols.iter().find(|s| (s.year, s.day) == (year, day)),
         Some((day, None)) if day <= 25 => sols.iter().rfind(|s| s.day == day),
         Some((year, None)) => sols.iter().rfind(|s| s.year == year),
