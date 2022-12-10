@@ -1,4 +1,4 @@
-use std::{collections::HashSet, mem};
+use std::mem;
 
 use super::*;
 
@@ -422,18 +422,61 @@ impl Solution<2022, 8> for Puzzle {
 
 impl Solution<2022, 9> for Puzzle {
     fn solve(&mut self) -> Result<()> {
+        fn zigzag_encode(x: i32) -> u32 {
+            ((x << 1) ^ (x >> 31)) as u32
+        }
+
+        #[cfg(not(target_arch = "x86_64"))]
+        fn interleave(x: u32, y: u32) -> u64 {
+            fn interleave_with_zeros(input: u32) -> u64 {
+                let mut word = input as u64;
+                word = (word ^ (word << 16)) & 0x0000ffff0000ffff;
+                word = (word ^ (word << 8)) & 0x00ff00ff00ff00ff;
+                word = (word ^ (word << 4)) & 0x0f0f0f0f0f0f0f0f;
+                word = (word ^ (word << 2)) & 0x3333333333333333;
+                word = (word ^ (word << 1)) & 0x5555555555555555;
+                word
+            }
+            interleave_with_zeros(x) | (interleave_with_zeros(y) << 1)
+        }
+
+        #[cfg(target_arch = "x86_64")]
+        fn interleave(x: u32, y: u32) -> u64 {
+            use std::arch::x86_64::_pdep_u64;
+            unsafe {
+                _pdep_u64(x as u64, 0x5555555555555555) | _pdep_u64(y as u64, 0xaaaaaaaaaaaaaaaa)
+            }
+        }
+
         #[derive(Clone, Copy, Default, PartialEq, Eq, Hash)]
         struct Point {
             x: i32,
             y: i32,
         }
 
+        impl Point {
+            fn index(self) -> usize {
+                let x = zigzag_encode(self.x);
+                let y = zigzag_encode(self.y);
+                interleave(x, y) as usize
+            }
+
+            fn set_in(self, bitset: &mut Vec<u64>) {
+                let index = self.index();
+                let (word_i, bit_i) = (index / 64, index % 64);
+                if word_i >= bitset.len() {
+                    bitset.resize(bitset.len() * 2, 0);
+                }
+                bitset[word_i] |= 1 << bit_i;
+            }
+        }
+
         let mut knots = [Point::default(); 10];
 
-        let mut knot_1_track = HashSet::new();
-        knot_1_track.insert(Point::default());
-        let mut knot_9_track = HashSet::new();
-        knot_9_track.insert(Point::default());
+        let mut knot_1_track = vec![0u64; 4096];
+        knot_1_track[0] = 1;
+        let mut knot_9_track = vec![0u64; 4096];
+        knot_9_track[0] = 1;
 
         for line in self.input.lines() {
             let (direction, step) = line.split_once(' ').ok()?;
@@ -465,16 +508,19 @@ impl Solution<2022, 9> for Puzzle {
                     }
 
                     if i == 1 {
-                        knot_1_track.insert(*cur);
+                        cur.set_in(&mut knot_1_track);
                     } else if i == 9 {
-                        knot_9_track.insert(*cur);
+                        cur.set_in(&mut knot_9_track);
                     }
                 }
             }
         }
 
-        self.output(knot_1_track.len());
-        self.output(knot_9_track.len());
+        let ans1: u32 = knot_1_track.iter().map(|x| x.count_ones()).sum();
+        let ans2: u32 = knot_9_track.iter().map(|x| x.count_ones()).sum();
+
+        self.output(ans1);
+        self.output(ans2);
         Ok(())
     }
 }
