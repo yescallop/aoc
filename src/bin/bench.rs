@@ -4,23 +4,10 @@ use aoc::{dynamic::DynSolution, *};
 
 const RUNS: u32 = 10000;
 
-fn parse_args() -> Option<(u32, u32)> {
-    let mut args = env::args();
-    args.next();
-
-    let year = args.next()?.parse().ok()?;
-    let day = args.next()?.parse().ok()?;
-    Some((year, day))
-}
-
 fn main() -> Result<()> {
     let sols = dynamic::solutions();
 
-    if let Some((year, day)) = parse_args() {
-        let sol = sols
-            .iter()
-            .find(|s| (s.year, s.day) == (year, day))
-            .ok_or(Error::SolutionNotFound)?;
+    if let Some(sol) = dynamic::solution_by_args() {
         bench(sol)
     } else if let Some("all") = env::args().nth(1).as_deref() {
         sols.iter().try_for_each(bench)

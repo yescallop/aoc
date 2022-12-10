@@ -33,7 +33,7 @@ out[1] = 10
 Typically you won't need to modify anything else, except for some small initialization[^3] before a new year's work.
 
 [^1]: To run a specific solution, pass in the arguments `year day`.
-You may omit the day to run the latest solution in a specific year.
+You may omit the day (year) to run the latest solution in a specific (the latest) year.
 [^2]: Cookie file (`cookie.txt`) is needed, with contents `session=<obtained from your browser>`.
 [^3]: This includes updating the [module declarations][1] and the [`push_sols` macro call][2].
 

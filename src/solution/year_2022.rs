@@ -494,9 +494,7 @@ impl Solution<2022, 9> for Puzzle {
                 knots[0].y += dy;
 
                 for i in 1..10 {
-                    let [front, cur] = &mut knots[i - 1..=i] else {
-                        unreachable!();
-                    };
+                    let (front, cur) = (knots[i - 1], &mut knots[i]);
                     let diff_x = front.x - cur.x;
                     let diff_y = front.y - cur.y;
 
