@@ -45,7 +45,7 @@ impl Puzzle {
 }
 
 pub fn fetch_puzzle(year: u32, day: u32) -> Result<Puzzle> {
-    let path = format!("cache/{year}/{day}.txt");
+    let path = format!("input/{year}/{day}.txt");
     let path = Path::new(&path);
 
     if let Ok(data) = fs::read_to_string(path) {
