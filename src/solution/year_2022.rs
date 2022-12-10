@@ -524,3 +524,92 @@ impl Solution<2022, 9> for Puzzle {
         Ok(())
     }
 }
+
+impl Solution<2022, 10> for Puzzle {
+    fn solve(&mut self) -> Result<()> {
+        #[derive(Clone, Copy)]
+        enum Instr {
+            Noop,
+            AddX(i32),
+        }
+
+        struct Cpu<I> {
+            instrs: I,
+            cur_instr: Option<Instr>,
+            cycles_countdown: i32,
+            x: i32,
+        }
+
+        impl<I> Cpu<I>
+        where
+            I: Iterator<Item = Instr>,
+        {
+            fn from_instrs(instrs: I) -> Cpu<I> {
+                Cpu {
+                    instrs,
+                    cur_instr: None,
+                    cycles_countdown: 0,
+                    x: 1,
+                }
+            }
+        }
+
+        impl<I> Iterator for Cpu<I>
+        where
+            I: Iterator<Item = Instr>,
+        {
+            type Item = i32;
+
+            /// Yields the value of the `X` register during each cycle.
+            fn next(&mut self) -> Option<i32> {
+                if self.cycles_countdown == 0 {
+                    match self.cur_instr.take() {
+                        None | Some(Instr::Noop) => (),
+                        Some(Instr::AddX(v)) => self.x += v,
+                    }
+
+                    if let Some(instr) = self.instrs.next() {
+                        self.cur_instr = Some(instr);
+                        self.cycles_countdown = match instr {
+                            Instr::Noop => 1,
+                            Instr::AddX(_) => 2,
+                        };
+                    }
+                }
+                self.cycles_countdown -= 1;
+                Some(self.x)
+            }
+        }
+
+        let instrs = self.input.lines().filter_map(|line| {
+            let mut args = line.split(' ');
+            match args.next()? {
+                "noop" => Some(Instr::Noop),
+                "addx" => Some(Instr::AddX(args.next()?.parse().ok()?)),
+                _ => None,
+            }
+        });
+
+        let mut signal_strength_sum = 0;
+        let mut image = String::with_capacity(41 * 6);
+
+        for (index, x) in Cpu::from_instrs(instrs).enumerate().take(240) {
+            let col = (index % 40) as i32;
+            if col == 0 {
+                image.push('\n');
+            } else if col == 19 {
+                signal_strength_sum += (index as i32 + 1) * x;
+            }
+
+            image.push(if (x - 1..=x + 1).contains(&col) {
+                '#'
+            } else {
+                '.'
+            });
+        }
+
+        self.output(signal_strength_sum);
+        self.output(image);
+        Ok(())
+    }
+}
