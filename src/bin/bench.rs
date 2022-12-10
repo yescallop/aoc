@@ -5,14 +5,10 @@ use aoc::{dynamic::DynSolution, *};
 const RUNS: u32 = 10000;
 
 fn main() -> Result<()> {
-    let sols = dynamic::solutions();
-
     if let Some("all") = env::args().nth(1).as_deref() {
-        sols.iter().try_for_each(bench)
-    } else if let Some(sol) = dynamic::solution_by_args() {
-        bench(sol)
+        dynamic::solutions().iter().try_for_each(bench)
     } else {
-        bench(sols.last().ok_or(Error::SolutionNotFound)?)
+        bench(dynamic::solution_by_args().ok_or(Error::SolutionNotFound)?)
     }
 }
 
