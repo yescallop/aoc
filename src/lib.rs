@@ -18,23 +18,29 @@ pub trait Solution<const YEAR: u32, const DAY: u32> {
 
 pub struct Puzzle {
     input: String,
-    outputs: Vec<String>,
+    outputs: Option<Vec<String>>,
 }
 
 impl Puzzle {
     fn new(input: String) -> Puzzle {
         Puzzle {
             input,
-            outputs: Vec::with_capacity(2),
+            outputs: Some(Vec::new()),
         }
     }
 
+    pub fn suppress_output(&mut self) {
+        self.outputs = None;
+    }
+
     fn output<T: Display>(&mut self, t: T) {
-        self.outputs.push(t.to_string());
+        if let Some(outputs) = &mut self.outputs {
+            outputs.push(t.to_string());
+        }
     }
 
     pub fn outputs(&self) -> impl Iterator<Item = &str> {
-        self.outputs.iter().map(|out| out.as_str())
+        self.outputs.iter().flatten().map(|out| out.as_str())
     }
 }
 

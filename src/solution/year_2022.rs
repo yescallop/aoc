@@ -601,11 +601,8 @@ impl Solution<2022, 10> for Puzzle {
                 signal_strength_sum += (index as i32 + 1) * x;
             }
 
-            image.push(if (x - 1..=x + 1).contains(&col) {
-                '#'
-            } else {
-                '.'
-            });
+            let sprite = x - 1..=x + 1;
+            image.push(if sprite.contains(&col) { '#' } else { '.' });
         }
 
         self.output(signal_strength_sum);
