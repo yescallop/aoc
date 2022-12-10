@@ -33,7 +33,10 @@ fn all_solutions() -> Result<()> {
         ],
     );
 
-    for sol in dynamic::solutions() {
+    let sols = dynamic::solutions();
+    assert_eq!(sols.len(), expected.len());
+
+    for sol in sols {
         let mut puzzle = fetch_puzzle(sol.year, sol.day)?;
         (sol.solve)(&mut puzzle)?;
         let expected = expected[&(sol.year, sol.day)];
