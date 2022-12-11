@@ -608,3 +608,113 @@ impl Solution<2022, 10> for Puzzle {
         Ok(())
     }
 }
+
+impl Solution<2022, 11> for Puzzle {
+    fn solve(&mut self) -> Result<()> {
+        #[derive(Clone)]
+        struct Monkey {
+            items: Vec<u64>,
+            op: Op,
+            divisor: u64,
+            throw_to: [usize; 2],
+            items_inspected: u64,
+        }
+
+        #[derive(Clone, Copy)]
+        enum Op {
+            Add(u64),
+            Mul(u64),
+            Sqr,
+        }
+
+        let mut lines = self.input.lines();
+        let mut monkeys = Vec::<Monkey>::new();
+
+        while let Some(_monkey) = lines.next() {
+            let (_, items) = lines.next().ok()?.split_once(": ").ok()?;
+            let items = items
+                .split(", ")
+                .map(u64::from_str)
+                .collect::<Result<Vec<_>, _>>()?;
+
+            let (_, op) = lines.next().ok()?.split_once("old ").ok()?;
+            let op = match op.split_once(' ').ok()? {
+                ("+", imm) => Op::Add(imm.parse()?),
+                ("*", "old") => Op::Sqr,
+                ("*", imm) => Op::Mul(imm.parse()?),
+                _ => err!(),
+            };
+
+            let mut rextract = || Some(lines.next()?.rsplit_once(' ')?.1);
+
+            let divisor = rextract().ok()?.parse()?;
+            let throw_to_if_true = rextract().ok()?.parse()?;
+            let throw_to_if_false = rextract().ok()?.parse()?;
+
+            monkeys.push(Monkey {
+                items,
+                op,
+                divisor,
+                throw_to: [throw_to_if_false, throw_to_if_true],
+                items_inspected: 0,
+            });
+
+            let _blank = lines.next();
+        }
+
+        fn play_round(monkeys: &mut [Monkey], item_map: impl Fn(u64) -> u64) {
+            for i in 0..monkeys.len() {
+                let items_len = monkeys[i].items.len();
+                monkeys[i].items_inspected += items_len as u64;
+
+                for item_i in 0..items_len {
+                    let monkey = &monkeys[i];
+                    let mut item = monkey.items[item_i];
+                    match monkey.op {
+                        Op::Add(imm) => item += imm,
+                        Op::Mul(imm) => item *= imm,
+                        Op::Sqr => item *= item,
+                    }
+
+                    let item = item_map(item);
+
+                    let divisible = item % monkey.divisor == 0;
+
+                    let to = monkey.throw_to[divisible as usize];
+                    monkeys[to].items.push(item);
+                }
+                monkeys[i].items.clear();
+            }
+        }
+
+        fn monkey_business_level(monkeys: &[Monkey]) -> u64 {
+            let mut inspected: Vec<_> = monkeys.iter().map(|m| m.items_inspected).collect();
+            inspected.select_nth_unstable_by(1, |a, b| b.cmp(a));
+            inspected[0] * inspected[1]
+        }
+
+        ensure!(monkeys.len() > 2);
+        for (i, monkey) in monkeys.iter().enumerate() {
+            ensure!(monkey
+                .throw_to
+                .iter()
+                .all(|&to| to != i && to < monkeys.len()));
+        }
+        let divisors_prod: u64 = monkeys.iter().map(|m| m.divisor).product();
+
+        let mut relieving_monkeys = monkeys.clone();
+        for _ in 0..20 {
+            play_round(&mut relieving_monkeys, |item| item / 3);
+        }
+        let ans1 = monkey_business_level(&relieving_monkeys);
+
+        for _ in 0..10000 {
+            play_round(&mut monkeys, |item| item % divisors_prod);
+        }
+        let ans2 = monkey_business_level(&monkeys);
+
+        self.output(ans1);
+        self.output(ans2);
+        Ok(())
+    }
+}
