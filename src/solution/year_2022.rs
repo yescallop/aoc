@@ -624,7 +624,7 @@ impl Solution<2022, 11> for Puzzle {
         enum Op {
             Add(u64),
             Mul(u64),
-            Sqr,
+            Square,
         }
 
         let mut lines = self.input.lines();
@@ -640,7 +640,7 @@ impl Solution<2022, 11> for Puzzle {
             let (_, op) = lines.next().ok()?.split_once("old ").ok()?;
             let op = match op.split_once(' ').ok()? {
                 ("+", imm) => Op::Add(imm.parse()?),
-                ("*", "old") => Op::Sqr,
+                ("*", "old") => Op::Square,
                 ("*", imm) => Op::Mul(imm.parse()?),
                 _ => err!(),
             };
@@ -673,7 +673,7 @@ impl Solution<2022, 11> for Puzzle {
                     match monkey.op {
                         Op::Add(imm) => item += imm,
                         Op::Mul(imm) => item *= imm,
-                        Op::Sqr => item *= item,
+                        Op::Square => item *= item,
                     }
 
                     let item = item_map(item);
