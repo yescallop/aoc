@@ -724,7 +724,7 @@ impl Solution<2022, 12> for Puzzle {
     fn solve(&mut self) -> Result<()> {
         let width = self.input.lines().next().ok()?.len();
 
-        let mut map = Vec::with_capacity(width);
+        let mut map = Vec::with_capacity(width * width);
         let mut start = None;
         let mut dest = None;
 
@@ -736,9 +736,10 @@ impl Solution<2022, 12> for Puzzle {
             if dest.is_none() {
                 dest = line.iter().position(|&b| b == b'E').zip(Some(y));
             }
-            map.push(line.to_vec());
+            map.extend_from_slice(line);
         }
 
+        let height = map.len() / width;
         let (Some(start), Some(dest)) = (start, dest) else {
             err!();
         };
@@ -747,7 +748,9 @@ impl Solution<2022, 12> for Puzzle {
 
         // We're going in reverse!
         fn bfs_min_steps_rev(
-            map: &mut Vec<Vec<u8>>,
+            map: &mut Vec<u8>,
+            width: usize,
+            height: usize,
             queue: &mut VecDeque<State>,
             is_dest: impl Fn(State) -> bool,
         ) -> Option<u32> {
@@ -765,9 +768,10 @@ impl Solution<2022, 12> for Puzzle {
                     let next_x = cur_pos.0.wrapping_add(dx as usize);
                     let next_y = cur_pos.1.wrapping_add(dy as usize);
 
-                    let Some(next_h) = map.get_mut(next_y).and_then(|row| row.get_mut(next_x)) else {
+                    if next_x >= width || next_y >= height {
                         continue;
-                    };
+                    }
+                    let next_h = &mut map[next_y * width + next_x];
 
                     if *next_h >= cur_h - 1 {
                         queue.push_back(((next_x, next_y), *next_h, steps + 1));
@@ -778,17 +782,19 @@ impl Solution<2022, 12> for Puzzle {
             None
         }
 
-        let mut queue = VecDeque::with_capacity(width * map.len());
+        let mut queue = VecDeque::with_capacity(width * height);
         queue.push_back((dest, b'z', 0));
 
-        map[dest.1][dest.0] = 0;
-        map[start.1][start.0] = b'a';
+        map[dest.1 * width + dest.0] = 0;
+        map[start.1 * width + start.0] = b'a';
 
-        let ans2 = bfs_min_steps_rev(&mut map, &mut queue, |(_, h, _)| h == b'a').ok()?;
-        let ans1 = bfs_min_steps_rev(&mut map, &mut queue, |(pos, ..)| pos == start).ok()?;
+        let ans2 = bfs_min_steps_rev(&mut map, width, height, &mut queue, |(_, h, _)| h == b'a');
+        let ans1 = bfs_min_steps_rev(&mut map, width, height, &mut queue, |(pos, ..)| {
+            pos == start
+        });
 
-        self.output(ans1);
-        self.output(ans2);
+        self.output(ans1.ok()?);
+        self.output(ans2.ok()?);
         Ok(())
     }
 }
