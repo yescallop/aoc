@@ -1,3 +1,5 @@
+use std::collections::VecDeque;
+
 use super::*;
 
 // Alternative: collect into a `Vec` and use `{sort, select_nth}_unstable_by`.
@@ -661,7 +663,7 @@ impl Solution<2022, 11> for Puzzle {
             let _blank = lines.next();
         }
 
-        fn play_round(monkeys: &mut [Monkey], item_map: impl Fn(u64) -> u64) {
+        fn play_round(monkeys: &mut [Monkey], reduce_item: impl Fn(u64) -> u64) {
             for i in 0..monkeys.len() {
                 let items_len = monkeys[i].items.len();
                 monkeys[i].items_inspected += items_len as u64;
@@ -675,7 +677,7 @@ impl Solution<2022, 11> for Puzzle {
                         Op::Square => item *= item,
                     }
 
-                    let item = item_map(item);
+                    let item = reduce_item(item);
 
                     let divisible = item % monkey.divisor == 0;
 
@@ -711,6 +713,79 @@ impl Solution<2022, 11> for Puzzle {
             play_round(&mut monkeys, |item| item % divisors_prod);
         }
         let ans2 = monkey_business_level(&monkeys);
+
+        self.output(ans1);
+        self.output(ans2);
+        Ok(())
+    }
+}
+
+impl Solution<2022, 12> for Puzzle {
+    fn solve(&mut self) -> Result<()> {
+        let width = self.input.lines().next().ok()?.len();
+
+        let mut map = Vec::with_capacity(width);
+        let mut start = None;
+        let mut dest = None;
+
+        for (y, line) in self.input.lines().map(str::as_bytes).enumerate() {
+            ensure!(line.len() == width);
+            if start.is_none() {
+                start = line.iter().position(|&b| b == b'S').zip(Some(y));
+            }
+            if dest.is_none() {
+                dest = line.iter().position(|&b| b == b'E').zip(Some(y));
+            }
+            map.push(line.to_vec());
+        }
+
+        let (Some(start), Some(dest)) = (start, dest) else {
+            err!();
+        };
+
+        type State = ((usize, usize), u8, u32);
+
+        // We're going in reverse!
+        fn bfs_min_steps_rev(
+            map: &mut Vec<Vec<u8>>,
+            queue: &mut VecDeque<State>,
+            is_dest: impl Fn(State) -> bool,
+        ) -> Option<u32> {
+            const DELTAS: [(isize, isize); 4] = [(0, 1), (0, -1), (1, 0), (-1, 0)];
+
+            while let Some(state) = queue.pop_front() {
+                let (cur_pos, cur_h, steps) = state;
+                if is_dest(state) {
+                    // Push it back so we can reuse the queue.
+                    queue.push_front(state);
+                    return Some(steps);
+                }
+
+                for (dx, dy) in DELTAS {
+                    let next_x = cur_pos.0.wrapping_add(dx as usize);
+                    let next_y = cur_pos.1.wrapping_add(dy as usize);
+
+                    let Some(next_h) = map.get_mut(next_y).and_then(|row| row.get_mut(next_x)) else {
+                        continue;
+                    };
+
+                    if *next_h >= cur_h - 1 {
+                        queue.push_back(((next_x, next_y), *next_h, steps + 1));
+                        *next_h = 0;
+                    }
+                }
+            }
+            None
+        }
+
+        let mut queue = VecDeque::with_capacity(width * map.len());
+        queue.push_back((dest, b'z', 0));
+
+        map[dest.1][dest.0] = 0;
+        map[start.1][start.0] = b'a';
+
+        let ans2 = bfs_min_steps_rev(&mut map, &mut queue, |(_, h, _)| h == b'a').ok()?;
+        let ans1 = bfs_min_steps_rev(&mut map, &mut queue, |(pos, ..)| pos == start).ok()?;
 
         self.output(ans1);
         self.output(ans2);
