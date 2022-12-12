@@ -1,5 +1,3 @@
-use std::mem;
-
 use super::*;
 
 // Alternative: collect into a `Vec` and use `{sort, select_nth}_unstable_by`.
@@ -139,7 +137,7 @@ impl Solution<2022, 5> for Puzzle {
         fn get_two_mut<T>(slice: &mut [T], mut i: usize, mut j: usize) -> (&mut T, &mut T) {
             let rev = i > j;
             if rev {
-                mem::swap(&mut i, &mut j);
+                (i, j) = (j, i);
             }
             let [a, .., b] = &mut slice[i..=j] else {
                 panic!("duplicate index");
