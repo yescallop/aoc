@@ -325,13 +325,13 @@ impl Solution<2022, 8> for Puzzle {
         let width = self.input.lines().next().ok()?.len();
 
         let mut rows = Vec::with_capacity(width);
-        let mut visible: Vec<Vec<bool>> = Vec::with_capacity(width);
+        let mut visible: Vec<bool> = Vec::with_capacity(width * width);
+        let mut vis_row = vec![false; width];
 
         let mut max_from_top = vec![0u8; width];
 
         for row in self.input.lines().map(str::as_bytes) {
             ensure!(row.len() == width);
-            let mut vis_row = vec![false; width];
 
             let mut max_from_left = 0;
             for i in 0..width {
@@ -359,14 +359,15 @@ impl Solution<2022, 8> for Puzzle {
             }
 
             rows.push(row);
-            visible.push(vis_row);
+            visible.extend_from_slice(&vis_row);
+            vis_row.fill(false);
         }
 
         let mut max_from_bottom = vec![0u8; width];
         let mut cols_done = 0;
 
-        for (row, vis_row) in rows.iter().zip(visible.iter_mut()).rev() {
-            assert!(row.len() == width && vis_row.len() == width);
+        for (row, vis_row) in rows.iter().rev().zip(visible.rchunks_mut(width)) {
+            assert!(row.len() == width);
 
             for i in 0..width {
                 let h = row[i];
@@ -381,7 +382,7 @@ impl Solution<2022, 8> for Puzzle {
             }
         }
 
-        let visible_cnt = visible.iter().flatten().filter(|&&b| b).count();
+        let visible_cnt = visible.iter().filter(|&&b| b).count();
 
         fn viewing_dis(h: u8, mut iter: impl Iterator<Item = u8>) -> u32 {
             let mut dis = 0;
