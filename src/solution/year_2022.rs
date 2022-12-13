@@ -726,41 +726,38 @@ impl Solution<2022, 12> for Puzzle {
 
         let mut map = Vec::with_capacity(width * width);
         let mut start = None;
-        let mut dest = None;
+        let mut end = None;
 
-        for (y, line) in self.input.lines().map(str::as_bytes).enumerate() {
+        let mut y = 0;
+        for line in self.input.lines().map(str::as_bytes) {
             ensure!(line.len() == width);
             if start.is_none() {
                 start = line.iter().position(|&b| b == b'S').zip(Some(y));
             }
-            if dest.is_none() {
-                dest = line.iter().position(|&b| b == b'E').zip(Some(y));
+            if end.is_none() {
+                end = line.iter().position(|&b| b == b'E').zip(Some(y));
             }
             map.extend_from_slice(line);
+            y += 1;
         }
 
-        let height = map.len() / width;
-        let (Some(start), Some(dest)) = (start, dest) else {
-            err!();
-        };
-
-        type State = ((usize, usize), u8, u32);
+        let height = y;
+        let (start, end) = start.zip(end).ok()?;
 
         // We're going in reverse!
-        fn bfs_min_steps_rev(
-            map: &mut Vec<u8>,
+        fn bfs_min_steps(
+            map: &mut [u8],
             width: usize,
             height: usize,
-            queue: &mut VecDeque<State>,
-            is_dest: impl Fn(State) -> bool,
+            queue: &mut VecDeque<((usize, usize), u8, u32)>,
+            is_destination: impl Fn((usize, usize), u8) -> bool,
         ) -> Option<u32> {
             const DELTAS: [(isize, isize); 4] = [(0, 1), (0, -1), (1, 0), (-1, 0)];
 
-            while let Some(state) = queue.pop_front() {
-                let (cur_pos, cur_h, steps) = state;
-                if is_dest(state) {
-                    // Push it back so we can reuse the queue.
-                    queue.push_front(state);
+            while let Some((cur_pos, cur_h, steps)) = queue.pop_front() {
+                if is_destination(cur_pos, cur_h) {
+                    // Push this state back so we can reuse the queue.
+                    queue.push_front((cur_pos, cur_h, steps));
                     return Some(steps);
                 }
 
@@ -783,15 +780,13 @@ impl Solution<2022, 12> for Puzzle {
         }
 
         let mut queue = VecDeque::with_capacity(width * height);
-        queue.push_back((dest, b'z', 0));
+        queue.push_back((end, b'z', 0));
 
-        map[dest.1 * width + dest.0] = 0;
+        map[end.1 * width + end.0] = 0;
         map[start.1 * width + start.0] = b'a';
 
-        let ans2 = bfs_min_steps_rev(&mut map, width, height, &mut queue, |(_, h, _)| h == b'a');
-        let ans1 = bfs_min_steps_rev(&mut map, width, height, &mut queue, |(pos, ..)| {
-            pos == start
-        });
+        let ans2 = bfs_min_steps(&mut map, width, height, &mut queue, |_, h| h == b'a');
+        let ans1 = bfs_min_steps(&mut map, width, height, &mut queue, |pos, _| pos == start);
 
         self.output(ans1.ok()?);
         self.output(ans2.ok()?);
