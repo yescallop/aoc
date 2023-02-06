@@ -1,4 +1,7 @@
-use std::{cmp::Ordering, collections::VecDeque};
+use std::{
+    cmp::Ordering,
+    collections::{HashSet, VecDeque},
+};
 
 use super::*;
 
@@ -881,6 +884,102 @@ impl Solution<2022, 13> for Puzzle {
         let offset_6 = packets[index_2..].binary_search(&div_6).err().ok()?;
 
         self.output((index_2 + 1) * (index_2 + offset_6 + 2));
+        Ok(())
+    }
+}
+
+impl Solution<2022, 14> for Puzzle {
+    fn solve(&mut self) -> Result<()> {
+        #[derive(Debug, Clone, Copy, PartialEq, Eq, Hash)]
+        struct Point {
+            x: u32,
+            y: u32,
+        }
+
+        fn parse_point(s: &str) -> Option<Point> {
+            let (x, y) = s.split_once(',')?;
+            Some(Point {
+                // Avoid overflow.
+                x: x.parse().ok().filter(|&x| x > 0)?,
+                y: y.parse().ok()?,
+            })
+        }
+
+        fn sort(a: u32, b: u32) -> (u32, u32) {
+            if a < b {
+                (a, b)
+            } else {
+                (b, a)
+            }
+        }
+
+        let mut map = HashSet::new();
+        let mut max_y = 0;
+
+        for line in self.input.lines() {
+            let mut points = line.split(" -> ").filter_map(parse_point);
+            let mut last = points.next().ok()?;
+            max_y = last.y.max(max_y);
+
+            for point in points {
+                max_y = point.y.max(max_y);
+
+                if last.x == point.x {
+                    let (a, b) = sort(last.y, point.y);
+                    for y in a..=b {
+                        map.insert(Point { x: last.x, y });
+                    }
+                } else {
+                    ensure!(last.y == point.y);
+                    let (a, b) = sort(last.x, point.x);
+                    for x in a..=b {
+                        map.insert(Point { x, y: last.y });
+                    }
+                }
+                last = point;
+            }
+        }
+
+        const SPAWN_POS: Point = Point { x: 500, y: 0 };
+
+        let mut cnt = 0u32;
+        let mut cnt_with_void = 0u32;
+        loop {
+            let mut sand = SPAWN_POS;
+            'fall: loop {
+                if sand.y > max_y {
+                    if cnt_with_void == 0 {
+                        cnt_with_void = cnt;
+                    }
+                    map.insert(sand);
+                    break;
+                }
+                sand.y += 1;
+
+                let mut dest = [sand; 3];
+                dest[1].x -= 1;
+                dest[2].x += 1;
+
+                for p in dest {
+                    if !map.contains(&p) {
+                        sand = p;
+                        continue 'fall;
+                    }
+                }
+
+                sand.y -= 1;
+                map.insert(sand);
+                break;
+            }
+
+            cnt += 1;
+            if sand == SPAWN_POS {
+                break;
+            }
+        }
+
+        self.output(cnt_with_void);
+        self.output(cnt);
         Ok(())
     }
 }
