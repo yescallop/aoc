@@ -34,6 +34,7 @@ fn all_solutions() -> Result<()> {
     );
     expected.insert((2022, 11), ["66124", "19309892877"]);
     expected.insert((2022, 12), ["330", "321"]);
+    expected.insert((2022, 13), ["5852", "24190"]);
 
     let sols = dynamic::solutions();
     assert_eq!(sols.len(), expected.len());

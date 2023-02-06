@@ -1,4 +1,4 @@
-use std::collections::VecDeque;
+use std::{cmp::Ordering, collections::VecDeque};
 
 use super::*;
 
@@ -790,6 +790,97 @@ impl Solution<2022, 12> for Puzzle {
 
         self.output(ans1.ok()?);
         self.output(ans2.ok()?);
+        Ok(())
+    }
+}
+
+impl Solution<2022, 13> for Puzzle {
+    fn solve(&mut self) -> Result<()> {
+        #[derive(Eq)]
+        enum Val {
+            List(Vec<Val>),
+            Int(u32),
+        }
+
+        impl Ord for Val {
+            fn cmp(&self, other: &Self) -> Ordering {
+                match (self, other) {
+                    (Val::Int(a), Val::Int(b)) => a.cmp(b),
+                    (Val::List(a), Val::List(b)) => a.cmp(b),
+                    (Val::Int(a), Val::List(b)) => [Val::Int(*a)][..].cmp(b),
+                    (Val::List(a), Val::Int(b)) => a[..].cmp(&[Val::Int(*b)]),
+                }
+            }
+        }
+
+        impl PartialOrd for Val {
+            fn partial_cmp(&self, other: &Self) -> Option<Ordering> {
+                Some(self.cmp(other))
+            }
+        }
+
+        impl PartialEq for Val {
+            fn eq(&self, other: &Self) -> bool {
+                self.cmp(other).is_eq()
+            }
+        }
+
+        struct Parser<'a>(&'a str);
+
+        impl<'a> Parser<'a> {
+            fn parse(&mut self) -> Option<Val> {
+                if let Some(state) = self.0.strip_prefix('[') {
+                    self.0 = state;
+                    let mut list = vec![];
+                    loop {
+                        if let Some(state) = self.0.strip_prefix(']') {
+                            self.0 = state;
+                            return Some(Val::List(list));
+                        }
+                        list.push(self.parse()?);
+                        if let Some(state) = self.0.strip_prefix(',') {
+                            self.0 = state;
+                        }
+                    }
+                } else {
+                    let len = self.0.bytes().take_while(u8::is_ascii_digit).count();
+                    let (int, state) = self.0.split_at(len);
+                    self.0 = state;
+                    int.parse().ok().map(Val::Int)
+                }
+            }
+        }
+
+        let mut lines = self.input.lines();
+        let mut index = 0u32;
+        let mut sum = 0;
+        let mut packets = vec![];
+
+        while let Some((a, b)) = lines.next().zip(lines.next()) {
+            index += 1;
+
+            let (Some(Val::List(a)), Some(Val::List(b))) = (Parser(a).parse(), Parser(b).parse()) else {
+                err!()
+            };
+            if a < b {
+                sum += index;
+            }
+            packets.extend([a, b]);
+
+            let _blank = lines.next();
+        }
+
+        self.output(sum);
+
+        packets.sort_unstable();
+
+        let div_2 = vec![Val::List(vec![Val::Int(2)])];
+        let div_6 = vec![Val::List(vec![Val::Int(6)])];
+
+        let index_2 = packets.binary_search(&div_2).err().ok()?;
+        let offset_6 = packets[index_2..].binary_search(&div_6).err().ok()?;
+
+        self.output((index_2 + 1) * (index_2 + offset_6 + 2));
         Ok(())
     }
 }
