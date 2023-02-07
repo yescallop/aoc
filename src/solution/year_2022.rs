@@ -1,6 +1,6 @@
 use std::{
     cmp::Ordering,
-    collections::{HashSet, VecDeque},
+    collections::{BTreeMap, BTreeSet, VecDeque},
 };
 
 use super::*;
@@ -913,7 +913,7 @@ impl Solution<2022, 14> for Puzzle {
             }
         }
 
-        let mut map = HashSet::new();
+        let mut map = BTreeMap::<u32, BTreeSet<u32>>::new();
         let mut max_y = 0;
 
         for line in self.input.lines() {
@@ -926,14 +926,12 @@ impl Solution<2022, 14> for Puzzle {
 
                 if last.x == point.x {
                     let (a, b) = sort(last.y, point.y);
-                    for y in a..=b {
-                        map.insert(Point { x: last.x, y });
-                    }
+                    map.entry(last.x).or_default().extend(a..=b);
                 } else {
                     ensure!(last.y == point.y);
                     let (a, b) = sort(last.x, point.x);
                     for x in a..=b {
-                        map.insert(Point { x, y: last.y });
+                        map.entry(x).or_default().insert(last.y);
                     }
                 }
                 last = point;
@@ -947,28 +945,33 @@ impl Solution<2022, 14> for Puzzle {
         loop {
             let mut sand = SPAWN_POS;
             'fall: loop {
-                if sand.y > max_y {
-                    if cnt_with_void == 0 {
-                        cnt_with_void = cnt;
+                let mut fall = |dx: i32| {
+                    let to_x = sand.x.wrapping_add_signed(dx);
+                    let obstacle_y = map
+                        .get(&to_x)
+                        .and_then(|col| col.range(sand.y + 1..).next().copied())
+                        .unwrap_or(max_y + 2);
+                    let to_y = obstacle_y - 1;
+                    if to_y == sand.y {
+                        false
+                    } else {
+                        sand.x = to_x;
+                        sand.y = to_y;
+                        true
                     }
-                    map.insert(sand);
-                    break;
-                }
-                sand.y += 1;
+                };
 
-                let mut dest = [sand; 3];
-                dest[1].x -= 1;
-                dest[2].x += 1;
-
-                for p in dest {
-                    if !map.contains(&p) {
-                        sand = p;
+                for dx in [0, -1, 1] {
+                    if fall(dx) {
                         continue 'fall;
                     }
                 }
 
-                sand.y -= 1;
-                map.insert(sand);
+                if cnt_with_void == 0 && sand.y > max_y {
+                    cnt_with_void = cnt;
+                }
+
+                map.entry(sand.x).or_default().insert(sand.y);
                 break;
             }
 
